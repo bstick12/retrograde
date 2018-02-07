@@ -6,6 +6,7 @@
     <link href="highcharts/css/highcharts.css" type="text/css" rel="stylesheet" />
     <link href="bootswatch/lux/bootstrap.min.css" type="text/css" rel="stylesheet" />
     <link href="bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+
   </head>
   <body>
 
@@ -14,27 +15,96 @@
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="highcharts/highcharts.js"></script>
     <script src="assets/graph.js"></script>
+    <script src="react/umd/react.development.js"></script>
+    <script src="react-dom/umd/react-dom.development.js"></script>
+    <script src="babel-standalone/babel.min.js"></script>
+
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="navbar-brand">Retrograde</div>
     </nav>
 
     <div id="accordion">
-       <div class="card">
-          <div class="card-header" id="headingOne">
-            <h5 class="mb-0">
-              <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                Collapsible Group Item #1
-              </button>
-            </h5>
-          </div>
-
-        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-          <div class="card-body">
-          </div>
-        </div>
-      </div>
     </div>
+    <div id="root"></div>
+    <script type="text/babel">
 
+      class Retro extends React.Component {
+
+        constructor() {
+          super();
+          this.state = { retro: {} };
+        }
+
+        componentDidMount() {
+          this.Retro();
+        }
+
+        Retro() {
+          
+        }
+
+        render() {
+
+        }
+
+      }
+
+      class RetroList extends React.Component {
+
+        constructor() {
+          super();
+          this.state = { retros: [] };
+        }
+
+        componentDidMount() {
+          this.RetroList();
+        }
+
+        RetroList() {
+
+          var me = this;
+
+          $.getJSON('api/retros')
+            .done(function(data) {
+              me.setState({retros: data})
+            })
+            .fail(function(jqxhr, textStatus, error) {
+              console.log(error);
+            });
+
+        }
+
+        render() {
+
+          const retrosl = this.state.retros.map((retro, i) => (
+            <div class="card">
+              <div class="card-header" id={'retro-' + i}>
+                <h5 class="mb-0">
+                   <button className="btn btn-link" data-toggle="collapse" data-target={'#collapse-' + i} aria-expanded="true" aria-controls={'collapse-' + i}>
+                      Collapsible Group Item {retro.id}
+                    </button>
+                </h5>
+              </div>
+              <div id={'collapse-' + i} class="collapse show" aria-labelledby={`retro-` + i} data-parent="#accordion">
+                <div class="card-body">
+                </div>
+              </div>
+            </div>
+          ));
+
+          return (
+            <div>{retrosl}</div>
+          );
+        }
+
+      };
+
+      ReactDOM.render(
+        <RetroList />,
+        document.getElementById('accordion')
+      );
+
+    </script>
   </body>
 </html>

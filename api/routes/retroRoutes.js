@@ -3,12 +3,12 @@ module.exports = function(app) {
 
   var retros = require('../controllers/retroController');
 
-  app.route('/retros')
+  app.route('/api/retros')
     .get(retros.list_retros);
 
-  app.route('/retros/:retroId')
+  app.route('/api/retros/:retroId')
     .get(retros.get_a_retro);
 
-  app.route('/retros/:retroId/grade')
+  app.route('/api/retros/:retroId/grade')
     .get(retros.grade_a_retro);
 };

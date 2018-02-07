@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-standalone": "^6.26.0",
     "bootstrap": "^4.0.0",
     "bootswatch": "^4.0.0",
     "express": "^4.16.2",
@@ -17,6 +18,8 @@
     "jquery": "^3.3.1",
     "nconf": "^0.10.0",
     "popper.js": "^1.12.9",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
     "request": "^2.83.0"
   },
   "devDependencies": {

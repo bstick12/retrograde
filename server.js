@@ -25,6 +25,9 @@ app.use('/highcharts', express.static(__dirname + '/node_modules/highcharts'));
 app.use('/bootswatch', express.static(__dirname + '/node_modules/bootswatch/dist'));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist'));
 app.use('/popper.js', express.static(__dirname + '/node_modules/popper.js/dist'));
+app.use('/react', express.static(__dirname + '/node_modules/react/'));
+app.use('/react-dom', express.static(__dirname + '/node_modules/react-dom/'));
+app.use('/babel-standalone', express.static(__dirname + '/node_modules/babel-standalone/'));
 
 var routes = require('./api/routes/retroRoutes.js');
 routes(app)
