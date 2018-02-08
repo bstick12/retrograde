@@ -28,6 +28,7 @@ app.use('/popper.js', express.static(__dirname + '/node_modules/popper.js/dist')
 app.use('/react', express.static(__dirname + '/node_modules/react/'));
 app.use('/react-dom', express.static(__dirname + '/node_modules/react-dom/'));
 app.use('/babel-standalone', express.static(__dirname + '/node_modules/babel-standalone/'));
+app.use('/react-highcharts', express.static(__dirname + '/node_modules/react-highcharts/dist/'));
 
 var routes = require('./api/routes/retroRoutes.js');
 routes(app)

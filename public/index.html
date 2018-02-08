@@ -18,7 +18,7 @@
     <script src="react/umd/react.development.js"></script>
     <script src="react-dom/umd/react-dom.development.js"></script>
     <script src="babel-standalone/babel.min.js"></script>
-
+    <script src="react-highcharts/ReactHighcharts.js"></script>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="navbar-brand">Retrograde</div>
@@ -33,7 +33,7 @@
 
         constructor() {
           super();
-          this.state = { retro: {} };
+          this.state = { retroData : null };
         }
 
         componentDidMount() {
@@ -41,14 +41,83 @@
         }
 
         Retro() {
-          
+
+          var me = this;
+
+          $.getJSON('api/retros/' + this.props.retro.id + '/grade')
+            .done(function(data) {
+              me.setState({retroData: data })
+            })
+            .fail(function(jqxhr, textStatus, error) {
+              console.log(error);
+            });
         }
 
         render() {
 
-        }
+          var config = {};
 
-      }
+          if (this.state.retroData) {
+            var config = {
+              chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+              },
+              title: {
+                text: 'Sentiment'
+              },
+              plotOptions: {
+                pie:  {
+                  colors: ['#51c0b1','#fec722','#e34e40'],
+                  dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>'
+                  },
+                  distance: -50,
+                  startAngle: -90,
+                  endAngle: 90
+                }
+              },
+              series: [{
+                name: "Sentinment",
+                data: [
+                  { name: 'happy', y : this.state.retroData.category.happy, color: '#51c0b1' },
+                  { name: 'meh', y : this.state.retroData.category.meh, color: '#fec722' },
+                  { name: 'sad', y : this.state.retroData.category.sad, color: '#e34e40' },
+                ],
+                showInLegend: true
+              }]
+            };
+          };
+
+          return (
+            <span>
+            { this.state.retroData ? (
+            <div class="card">
+              <div class="card-header" id={'retro-' + this.props.retro.id}>
+                <h5 class="mb-0">
+                   <button className="btn btn-link" data-toggle="collapse" data-target={'#collapse-' + this.props.retro.id} aria-expanded="true" aria-controls={'collapse-' + this.props.retro.id}>
+              {this.props.retro.id + '- ' + this.props.retro.created_at}
+                    </button>
+                </h5>
+              </div>
+              <div id={'collapse-' + this.props.retro.id} class="collapse" aria-labelledby={`retro-` + this.props.retro.id} data-parent="#accordion">
+              <div class="card-body">
+                <ReactHighcharts config = {config}></ReactHighcharts>
+              </div>
+              </div>
+              </div>
+            ) : (
+              <div>Loading</div>
+            )}
+            </span>
+          )
+
+        };
+
+      };
 
       class RetroList extends React.Component {
 
@@ -77,24 +146,14 @@
 
         render() {
 
-          const retrosl = this.state.retros.map((retro, i) => (
-            <div class="card">
-              <div class="card-header" id={'retro-' + i}>
-                <h5 class="mb-0">
-                   <button className="btn btn-link" data-toggle="collapse" data-target={'#collapse-' + i} aria-expanded="true" aria-controls={'collapse-' + i}>
-                      Collapsible Group Item {retro.id}
-                    </button>
-                </h5>
-              </div>
-              <div id={'collapse-' + i} class="collapse show" aria-labelledby={`retro-` + i} data-parent="#accordion">
-                <div class="card-body">
-                </div>
-              </div>
-            </div>
-          ));
-
           return (
-            <div>{retrosl}</div>
+            <span>
+            {
+              this.state.retros.reverse().map((retro, i) => (
+              <Retro key={retro.id} retro={retro}/>
+              ))
+            }
+            </span>
           );
         }
 
