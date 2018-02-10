@@ -6,10 +6,10 @@ module.exports = function(app) {
   app.route('/api/retros')
     .get(retros.list_retros);
 
-  app.route('/api/retros/:retroId(\d+)')
+  app.route('/api/retros/:retroId([0-9]+)')
     .get(retros.get_a_retro);
 
-  app.route('/api/retros/:retroId(\d+)/grade')
+  app.route('/api/retros/:retroId([0-9]+)/grade')
     .get(retros.grade_a_retro);
 
   app.route('/api/retros/grade')
