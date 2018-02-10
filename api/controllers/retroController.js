@@ -5,9 +5,10 @@ var request = require('request')
 var project = conf.get('project');
 var bearerToken = conf.get('bearerToken');
 
-exports.list_retros = function(req,res) {
 
-  request.get('https://retros-iad-api.cfapps.io/retros/' + project + '/archives', {
+var callAPI = function(url, dataHandler) {
+
+  request.get(url , {
     'json' : true,
     'auth' : {
       'bearer': bearerToken
@@ -16,40 +17,42 @@ exports.list_retros = function(req,res) {
     if(error) {
       return console.error('List retros failed:', error);
     };
-    res.json(body.archives);
+    dataHandler(body);
+  });
+
+}
+
+var internal_list_retros = function(dataHandler) {
+
+  callAPI( 'https://retros-iad-api.cfapps.io/retros/' + project + '/archives', dataHandler);
+
+}
+
+exports.list_retros = function(req,res) {
+
+  internal_list_retros(function(data) {
+    res.json(data.archives);
   });
 
 };
 
-var apply_to_retro = function(retroId, apply) {
-
-  request.get('https://retros-iad-api.cfapps.io/retros/' + project + '/archives/' + retroId, {
-    'json' : true,
-    'auth' : {
-      'bearer': bearerToken
-    }
-  }, apply);
-
-};
+var internal_get_a_retro = function(retroId, dataHandler) {
+  callAPI('https://retros-iad-api.cfapps.io/retros/' + project + '/archives/' + retroId, dataHandler);
+}
 
 exports.get_a_retro = function(req,res) {
 
   var retroId = req.params.retroId;
 
-  var write_to_res = function(error, response, body) {
-    if(error) {
-      return console.error('Get a retro failed:', error);
-    };
-    res.json(body);
-  }
-
-  apply_to_retro(retroId, write_to_res);
+  internal_get_a_retro(retroId, function(data) {
+    res.json(data);
+  });
 
 };
 
-exports.grade_a_retro = function(req,res) {
+var internal_grade_a_retro = function(retroId, dataHandler) {
 
-  var retroId = req.params.retroId;
+  console.log("Calling grading for " + retroId);
 
   var count_by_author = function(retro_items) {
 
@@ -80,20 +83,64 @@ exports.grade_a_retro = function(req,res) {
 
   var retro_grade = {};
 
-  var count_by_owner = function(error, response, body) {
+  var grade_retro = function(data) {
 
-    if(error) {
-      return console.error('Get a retro failed:', error);
-    };
-
-    retro_grade['category'] = count_by_category(body.retro.items);
-    retro_grade['author'] = count_by_author(body.retro.items);
-    res.json(retro_grade);
+    retro_grade['category'] = count_by_category(data.retro.items);
+    retro_grade['author'] = count_by_author(data.retro.items);
+    dataHandler(retro_grade);
 
   };
 
-  apply_to_retro(retroId, count_by_owner);
+  internal_get_a_retro(retroId, grade_retro);
+
+}
+
+exports.grade_a_retro = function(req,res) {
+
+  var retroId = req.params.retroId;
+
+  internal_grade_a_retro(retroId, function (data) {
+    res.json(data);
+  });
 
 };
 
+var sleep = function (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function internal_grade_retros(dataHandler) {
+
+  var graded_retros = [];
+
+  internal_list_retros(async function(body) {
+    var retros = body.archives;
+
+    retros.forEach(function(retro, i) {
+      internal_grade_a_retro(retro.id, function(graded_retro) {
+        graded_retros.push(graded_retro);
+      });
+    });
+
+    while(true) {
+      if(retros.length == graded_retros.length) {
+        dataHandler(graded_retros);
+        return;
+      } else {
+        console.log('Going to sleep '  + graded_retros.length);
+        await sleep(100);
+      }
+    }
+
+  });
+
+};
+
+exports.grade_retros = function(req,res) {
+
+  internal_grade_retros(function(data) {
+    res.json(data);
+  });
+
+};
 
